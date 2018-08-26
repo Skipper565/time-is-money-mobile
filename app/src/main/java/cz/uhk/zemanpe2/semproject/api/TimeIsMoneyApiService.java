@@ -3,10 +3,7 @@ package cz.uhk.zemanpe2.semproject.api;
 import android.util.Base64;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import cz.uhk.zemanpe2.semproject.event.ApiErrorEvent;
-import cz.uhk.zemanpe2.semproject.event.ApiUnauthorizedEvent;
-import cz.uhk.zemanpe2.semproject.event.LoginRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.LoginResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.*;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,6 +38,29 @@ public class TimeIsMoneyApiService {
 
             @Override
             public void onFailure(Call<LoginResponseEvent> call, Throwable throwable) {
+                bus.post(new ApiErrorEvent(throwable.getMessage()));
+            }
+        });
+    }
+
+    @Subscribe
+    public void onMonthFinanceOverviewRequest(MonthFinanceOverviewRequestEvent event) {
+        String month = event.getDate().toString();
+        Call<MonthFinanceOverviewResponseEvent> monthFinanceApiCall =
+                api.monthFinanceOverview(month, event.getAccessToken());
+        monthFinanceApiCall.enqueue(new Callback<MonthFinanceOverviewResponseEvent>() {
+            @Override
+            public void onResponse(Call<MonthFinanceOverviewResponseEvent> call, Response<MonthFinanceOverviewResponseEvent> response) {
+                MonthFinanceOverviewResponseEvent monthFinanceOverview = response.body();
+                if (monthFinanceOverview == null) {
+                    bus.post(new ApiErrorEvent("Month finance overview is null"));
+                } else {
+                    bus.post(monthFinanceOverview);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MonthFinanceOverviewResponseEvent> call, Throwable throwable) {
                 bus.post(new ApiErrorEvent(throwable.getMessage()));
             }
         });

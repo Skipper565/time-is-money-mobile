@@ -33,9 +33,19 @@ public class LoginActivity extends AppCompatActivity {
         getBus().register(this);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        getBus().unregister(this);
+    }
+
     @Subscribe
     public void onLoginResponse(LoginResponseEvent event) {
         Intent i = new Intent(this, ListActivity.class);
+        i.putExtra("access_token", event.getAccessToken());
+        i.putExtra("refresh_token", event.getRefreshToken());
+        i.putExtra("expires_in", event.getExpiresIn());
         startActivity(i);
     }
 
@@ -43,13 +53,6 @@ public class LoginActivity extends AppCompatActivity {
     public void onApiUnauthorized(ApiUnauthorizedEvent event) {
         Toast.makeText(getApplicationContext(), getString(R.string.error_unauthorized), Toast.LENGTH_SHORT)
                 .show();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        getBus().unregister(this);
     }
 
     public void login(View view) {

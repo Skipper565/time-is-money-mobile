@@ -3,6 +3,8 @@ package cz.uhk.zemanpe2.semproject;
 import android.app.Application;
 import android.util.Log;
 import android.widget.Toast;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import cz.uhk.zemanpe2.semproject.api.TimeIsMoneyApiCalls;
@@ -38,9 +40,13 @@ public class TimeIsMoneyApplication extends Application {
     }
 
     private TimeIsMoneyApiCalls buildApi() {
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .create();
+
         return new Retrofit.Builder()
                 .baseUrl(API_URL)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
                 .create(TimeIsMoneyApiCalls.class);
     }
