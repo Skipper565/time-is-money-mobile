@@ -15,7 +15,6 @@ public interface TimeIsMoneyApiCalls {
     @POST("oauth/token?grant_type=refresh_token")
     public Call<LoginResponseEvent> refresh(@Query("refresh_token") String refreshToken, @Header("Authorization") String authorization);
 
-    @Headers("Content-Type: application/json")
     @GET("api/monthFinanceOverview")
     public Call<MonthFinanceOverviewResponseEvent> monthFinanceOverview(@Query("month") String month, @Query("access_token") String accessToken);
 

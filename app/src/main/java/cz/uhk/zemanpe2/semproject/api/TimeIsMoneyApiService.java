@@ -1,6 +1,7 @@
 package cz.uhk.zemanpe2.semproject.api;
 
 import android.util.Base64;
+import android.util.Log;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import cz.uhk.zemanpe2.semproject.event.add.AddRequestEvent;
@@ -14,6 +15,10 @@ import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOvervie
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class TimeIsMoneyApiService {
 
@@ -52,7 +57,8 @@ public class TimeIsMoneyApiService {
 
     @Subscribe
     public void onMonthFinanceOverviewRequest(MonthFinanceOverviewRequestEvent event) {
-        String month = event.getDate().toString();
+        DateFormat df = new SimpleDateFormat("MM-yyyy", Locale.ENGLISH);
+        String month = df.format(event.getDate());
         Call<MonthFinanceOverviewResponseEvent> monthFinanceApiCall =
                 api.monthFinanceOverview(month, event.getAccessToken());
         monthFinanceApiCall.enqueue(new Callback<MonthFinanceOverviewResponseEvent>() {
