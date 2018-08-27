@@ -1,4 +1,4 @@
-package cz.uhk.zemanpe2.semproject.event;
+package cz.uhk.zemanpe2.semproject.event.monthFinanceOverview;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -15,7 +15,8 @@ public class MonthFinanceOverviewResponseEvent {
     @Expose
     private float endBalance;
 
-    //private List<FinancialEntity> financeList;
+    @Expose
+    private List<FinancialEntity> financeList;
 
     public float getStartBalance() {
         return startBalance;
@@ -25,8 +26,8 @@ public class MonthFinanceOverviewResponseEvent {
         return endBalance;
     }
 
-    /*public List<FinancialEntity> getFinanceList() {
+    public List<FinancialEntity> getFinanceList() {
         return financeList;
-    }*/
+    }
 
 }

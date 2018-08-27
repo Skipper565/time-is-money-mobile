@@ -8,9 +8,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import cz.uhk.zemanpe2.semproject.event.ApiUnauthorizedEvent;
-import cz.uhk.zemanpe2.semproject.event.LoginRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.LoginResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.api.ApiUnauthorizedEvent;
+import cz.uhk.zemanpe2.semproject.event.login.LoginRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.login.LoginResponseEvent;
 
 public class LoginActivity extends AppCompatActivity {
 

@@ -3,7 +3,14 @@ package cz.uhk.zemanpe2.semproject.api;
 import android.util.Base64;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import cz.uhk.zemanpe2.semproject.event.*;
+import cz.uhk.zemanpe2.semproject.event.add.AddRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
+import cz.uhk.zemanpe2.semproject.event.api.ApiUnauthorizedEvent;
+import cz.uhk.zemanpe2.semproject.event.login.LoginRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.login.LoginResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewResponseEvent;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,4 +72,21 @@ public class TimeIsMoneyApiService {
             }
         });
     }
+
+    @Subscribe
+    public void onAddRequest(AddRequestEvent event) {
+        Call<AddResponseEvent> addApiCall = api.add(event, event.getAccessToken());
+        addApiCall.enqueue(new Callback<AddResponseEvent>() {
+            @Override
+            public void onResponse(Call<AddResponseEvent> call, Response<AddResponseEvent> response) {
+                bus.post(new AddResponseEvent());
+            }
+
+            @Override
+            public void onFailure(Call<AddResponseEvent> call, Throwable throwable) {
+                bus.post(new ApiErrorEvent(throwable.getMessage()));
+            }
+        });
+    }
+
 }

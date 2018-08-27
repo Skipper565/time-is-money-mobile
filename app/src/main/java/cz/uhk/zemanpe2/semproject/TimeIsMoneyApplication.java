@@ -9,7 +9,7 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import cz.uhk.zemanpe2.semproject.api.TimeIsMoneyApiCalls;
 import cz.uhk.zemanpe2.semproject.api.TimeIsMoneyApiService;
-import cz.uhk.zemanpe2.semproject.event.ApiErrorEvent;
+import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 

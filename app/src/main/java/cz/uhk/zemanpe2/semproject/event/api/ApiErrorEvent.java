@@ -1,4 +1,4 @@
-package cz.uhk.zemanpe2.semproject.event;
+package cz.uhk.zemanpe2.semproject.event.api;
 
 public class ApiErrorEvent {
 

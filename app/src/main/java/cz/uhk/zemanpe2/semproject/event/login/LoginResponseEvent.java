@@ -1,4 +1,4 @@
-package cz.uhk.zemanpe2.semproject.event;
+package cz.uhk.zemanpe2.semproject.event.login;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
