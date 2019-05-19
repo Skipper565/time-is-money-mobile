@@ -1,12 +1,15 @@
 package cz.uhk.zemanpe2.semproject.event.add;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import cz.uhk.zemanpe2.semproject.adapter.YyyyMmDdDateTypeAdapter;
 
 import java.util.Date;
 
-public class AddRequestEvent {
+public class AddFinancialEntityRequestEvent {
 
+    @Expose(serialize = false)
     private String accessToken;
 
     @SerializedName("type")
@@ -30,6 +33,7 @@ public class AddRequestEvent {
     private int monthDay;
 
     @SerializedName("date")
+    @JsonAdapter(YyyyMmDdDateTypeAdapter.class)
     @Expose
     private Date date;
 

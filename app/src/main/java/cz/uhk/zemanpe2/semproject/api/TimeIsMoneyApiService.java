@@ -1,11 +1,10 @@
 package cz.uhk.zemanpe2.semproject.api;
 
 import android.util.Base64;
-import android.util.Log;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import cz.uhk.zemanpe2.semproject.event.add.AddRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.add.AddResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityResponseEvent;
 import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 import cz.uhk.zemanpe2.semproject.event.api.ApiUnauthorizedEvent;
 import cz.uhk.zemanpe2.semproject.event.login.LoginRequestEvent;
@@ -80,16 +79,20 @@ public class TimeIsMoneyApiService {
     }
 
     @Subscribe
-    public void onAddRequest(AddRequestEvent event) {
-        Call<AddResponseEvent> addApiCall = api.add(event, event.getAccessToken());
-        addApiCall.enqueue(new Callback<AddResponseEvent>() {
+    public void onAddFinancialEntityRequest(AddFinancialEntityRequestEvent event) {
+        Call<AddFinancialEntityResponseEvent> addApiCall = api.addFinancialEntity(event, event.getAccessToken());
+        addApiCall.enqueue(new Callback<AddFinancialEntityResponseEvent>() {
             @Override
-            public void onResponse(Call<AddResponseEvent> call, Response<AddResponseEvent> response) {
-                bus.post(new AddResponseEvent());
+            public void onResponse(Call<AddFinancialEntityResponseEvent> call, Response<AddFinancialEntityResponseEvent> response) {
+                if (response.code() == 400) {
+                    bus.post(new ApiErrorEvent(response.body().getErrors().toString()));
+                } else {
+                    bus.post(new AddFinancialEntityResponseEvent());
+                }
             }
 
             @Override
-            public void onFailure(Call<AddResponseEvent> call, Throwable throwable) {
+            public void onFailure(Call<AddFinancialEntityResponseEvent> call, Throwable throwable) {
                 bus.post(new ApiErrorEvent(throwable.getMessage()));
             }
         });

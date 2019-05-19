@@ -1,7 +1,7 @@
 package cz.uhk.zemanpe2.semproject.api;
 
-import cz.uhk.zemanpe2.semproject.event.add.AddRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.add.AddResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityResponseEvent;
 import cz.uhk.zemanpe2.semproject.event.login.LoginResponseEvent;
 import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewResponseEvent;
 import retrofit2.Call;
@@ -19,7 +19,7 @@ public interface TimeIsMoneyApiCalls {
     public Call<MonthFinanceOverviewResponseEvent> monthFinanceOverview(@Query("month") String month, @Query("access_token") String accessToken);
 
     @Headers("Content-Type: application/json")
-    @POST("api/add")
-    public Call<AddResponseEvent> add(@Body AddRequestEvent addRequestEvent, @Query("access_token") String accessToken);
+    @POST("api/addFinancialEntity")
+    public Call<AddFinancialEntityResponseEvent> addFinancialEntity(@Body AddFinancialEntityRequestEvent addFinancialEntityRequestEvent, @Query("access_token") String accessToken);
 
 }

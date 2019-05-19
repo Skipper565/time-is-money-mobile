@@ -7,11 +7,10 @@ import android.view.View;
 import android.widget.*;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import cz.uhk.zemanpe2.semproject.event.add.AddRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.add.AddResponseEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityRequestEvent;
+import cz.uhk.zemanpe2.semproject.event.add.AddFinancialEntityResponseEvent;
 import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,6 +23,7 @@ public class AddActivity extends AppCompatActivity {
     private EditText value, note, monthDay, date;
     private CheckBox permanent;
     private String accessToken, refreshToken;
+    private Integer position;
     private Long expiresIn;
 
     @Override
@@ -41,7 +41,6 @@ public class AddActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         type.setAdapter(adapter);
 
-        type = findViewById(R.id.sType);
         value = findViewById(R.id.eTValue);
         note = findViewById(R.id.eTNote);
         permanent = findViewById(R.id.chBPermanent);
@@ -51,6 +50,7 @@ public class AddActivity extends AppCompatActivity {
         if (extras != null) {
             accessToken = extras.getString("access_token");
             refreshToken = extras.getString("refresh_token");
+            position = extras.getInt("position");
             expiresIn = extras.getLong("expires_in");
         }
     }
@@ -69,11 +69,19 @@ public class AddActivity extends AppCompatActivity {
         getBus().unregister(this);
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        getBus().unregister(this);
+    }
+
     @Subscribe
-    public void onCreateResponse(AddResponseEvent event) {
+    public void onCreateResponse(AddFinancialEntityResponseEvent event) {
         Intent i = new Intent(this, ListActivity.class);
         i.putExtra("access_token", accessToken);
         i.putExtra("refresh_token", refreshToken);
+        i.putExtra("position", position);
         i.putExtra("expires_in", expiresIn);
         startActivity(i);
     }
@@ -87,15 +95,17 @@ public class AddActivity extends AppCompatActivity {
     public void create(View view) throws ParseException {
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
 
-        AddRequestEvent addRequestEvent = new AddRequestEvent();
-        addRequestEvent.setAccessToken(accessToken);
-        addRequestEvent.setType(type.toString());
-        addRequestEvent.setValue(Float.parseFloat(value.getText().toString()));
-        addRequestEvent.setNote(note.getText().toString());
-        addRequestEvent.setPermanent(permanent.isChecked());
-        addRequestEvent.setMonthDay(Integer.parseInt(monthDay.getText().toString()));
-        addRequestEvent.setDate(df.parse(date.getText().toString()));
-        getBus().post(addRequestEvent);
+        AddFinancialEntityRequestEvent addFinancialEntityRequestEvent = new AddFinancialEntityRequestEvent();
+        addFinancialEntityRequestEvent.setAccessToken(accessToken);
+        addFinancialEntityRequestEvent.setType(type.getSelectedItem().toString());
+        addFinancialEntityRequestEvent.setValue(Float.parseFloat(value.getText().toString()));
+        addFinancialEntityRequestEvent.setNote(note.getText().toString());
+        addFinancialEntityRequestEvent.setPermanent(permanent.isChecked());
+        if (!monthDay.getText().toString().equals("") && permanent.isChecked()) {
+            addFinancialEntityRequestEvent.setMonthDay(Integer.parseInt(monthDay.getText().toString()));
+        }
+        addFinancialEntityRequestEvent.setDate(df.parse(date.getText().toString()));
+        getBus().post(addFinancialEntityRequestEvent);
     }
 
     private Bus getBus() {
