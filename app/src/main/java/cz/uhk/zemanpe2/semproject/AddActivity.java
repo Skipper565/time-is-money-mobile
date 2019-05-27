@@ -69,13 +69,6 @@ public class AddActivity extends AppCompatActivity {
         getBus().unregister(this);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        getBus().unregister(this);
-    }
-
     @Subscribe
     public void onCreateResponse(AddFinancialEntityResponseEvent event) {
         Intent i = new Intent(this, ListActivity.class);
