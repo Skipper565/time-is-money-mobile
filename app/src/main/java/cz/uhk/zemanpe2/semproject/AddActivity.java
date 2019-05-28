@@ -1,6 +1,12 @@
 package cz.uhk.zemanpe2.semproject;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,7 +20,6 @@ import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class AddActivity extends AppCompatActivity {
 
@@ -86,19 +91,42 @@ public class AddActivity extends AppCompatActivity {
     }
 
     public void create(View view) throws ParseException {
-        DateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
 
         AddFinancialEntityRequestEvent addFinancialEntityRequestEvent = new AddFinancialEntityRequestEvent();
         addFinancialEntityRequestEvent.setAccessToken(accessToken);
         addFinancialEntityRequestEvent.setType(type.getSelectedItem().toString());
         addFinancialEntityRequestEvent.setValue(Float.parseFloat(value.getText().toString()));
-        addFinancialEntityRequestEvent.setNote(note.getText().toString());
         addFinancialEntityRequestEvent.setPermanent(permanent.isChecked());
+        addFinancialEntityRequestEvent.setDate(df.parse(date.getText().toString()));
+        if (!note.getText().toString().equals("")) {
+            addFinancialEntityRequestEvent.setNote(note.getText().toString());
+        }
+
         if (!monthDay.getText().toString().equals("") && permanent.isChecked()) {
             addFinancialEntityRequestEvent.setMonthDay(Integer.parseInt(monthDay.getText().toString()));
         }
-        addFinancialEntityRequestEvent.setDate(df.parse(date.getText().toString()));
+
+        LocationManager locManager;
+        locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            Location location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                addFinancialEntityRequestEvent.setLatitude(String.valueOf(location.getLatitude()));
+                addFinancialEntityRequestEvent.setLongitude(String.valueOf(location.getLongitude()));
+            }
+        }
+
         getBus().post(addFinancialEntityRequestEvent);
+    }
+
+    public void onPermanentClicked(View view) {
+        if (((CheckBox) view).isChecked())
+            monthDay.setVisibility(View.VISIBLE);
+        else
+            monthDay.setVisibility(View.GONE);
     }
 
     private Bus getBus() {

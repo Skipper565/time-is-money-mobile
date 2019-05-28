@@ -1,5 +1,6 @@
 package cz.uhk.zemanpe2.semproject.event.add;
 
+import android.support.annotation.Nullable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
@@ -22,6 +23,7 @@ public class AddFinancialEntityRequestEvent {
 
     @SerializedName("note")
     @Expose
+    @Nullable
     private String note;
 
     @SerializedName("permanent")
@@ -30,12 +32,21 @@ public class AddFinancialEntityRequestEvent {
 
     @SerializedName("monthDay")
     @Expose
-    private int monthDay;
+    @Nullable
+    private Integer monthDay;
 
     @SerializedName("date")
     @JsonAdapter(YyyyMmDdDateTypeAdapter.class)
     @Expose
     private Date date;
+
+    @SerializedName("latitude")
+    @Expose
+    private String latitude;
+
+    @SerializedName("longitude")
+    @Expose
+    private String longitude;
 
     public String getAccessToken() {
         return accessToken;
@@ -45,52 +56,35 @@ public class AddFinancialEntityRequestEvent {
         this.accessToken = accessToken;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public void setType(String type) {
         this.type = type;
-    }
-
-    public float getValue() {
-        return value;
     }
 
     public void setValue(float value) {
         this.value = value;
     }
 
-    public String getNote() {
-        return note;
-    }
-
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public boolean isPermanent() {
-        return isPermanent;
     }
 
     public void setPermanent(boolean permanent) {
         isPermanent = permanent;
     }
 
-    public int getMonthDay() {
-        return monthDay;
-    }
-
-    public void setMonthDay(int monthDay) {
+    public void setMonthDay(Integer monthDay) {
         this.monthDay = monthDay;
-    }
-
-    public Date getDate() {
-        return date;
     }
 
     public void setDate(Date date) {
         this.date = date;
     }
 
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
 }

@@ -9,15 +9,9 @@ import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 import cz.uhk.zemanpe2.semproject.event.api.ApiUnauthorizedEvent;
 import cz.uhk.zemanpe2.semproject.event.login.LoginRequestEvent;
 import cz.uhk.zemanpe2.semproject.event.login.LoginResponseEvent;
-import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewRequestEvent;
-import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewResponseEvent;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class TimeIsMoneyApiService {
 
@@ -55,39 +49,15 @@ public class TimeIsMoneyApiService {
     }
 
     @Subscribe
-    public void onMonthFinanceOverviewRequest(MonthFinanceOverviewRequestEvent event) {
-        DateFormat df = new SimpleDateFormat("MM-yyyy", Locale.ENGLISH);
-        String month = df.format(event.getDate());
-        Call<MonthFinanceOverviewResponseEvent> monthFinanceApiCall =
-                api.monthFinanceOverview(month, event.getAccessToken());
-        monthFinanceApiCall.enqueue(new Callback<MonthFinanceOverviewResponseEvent>() {
-            @Override
-            public void onResponse(Call<MonthFinanceOverviewResponseEvent> call, Response<MonthFinanceOverviewResponseEvent> response) {
-                MonthFinanceOverviewResponseEvent monthFinanceOverview = response.body();
-                if (monthFinanceOverview == null) {
-                    bus.post(new ApiErrorEvent("Month finance overview is null"));
-                } else {
-                    bus.post(monthFinanceOverview);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<MonthFinanceOverviewResponseEvent> call, Throwable throwable) {
-                bus.post(new ApiErrorEvent(throwable.getMessage()));
-            }
-        });
-    }
-
-    @Subscribe
     public void onAddFinancialEntityRequest(AddFinancialEntityRequestEvent event) {
         Call<AddFinancialEntityResponseEvent> addApiCall = api.addFinancialEntity(event, event.getAccessToken());
         addApiCall.enqueue(new Callback<AddFinancialEntityResponseEvent>() {
             @Override
             public void onResponse(Call<AddFinancialEntityResponseEvent> call, Response<AddFinancialEntityResponseEvent> response) {
-                if (response.code() == 400) {
-                    bus.post(new ApiErrorEvent(response.body().getErrors().toString()));
-                } else {
+                if (response.code() == 201) {
                     bus.post(new AddFinancialEntityResponseEvent());
+                } else {
+                    bus.post(new ApiErrorEvent(response.body().getErrors().toString()));
                 }
             }
 
