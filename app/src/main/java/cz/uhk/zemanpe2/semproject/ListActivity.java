@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,14 +17,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 import cz.uhk.zemanpe2.semproject.adapter.ListAdapter;
-import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewRequestEvent;
+import cz.uhk.zemanpe2.semproject.api.TimeIsMoneyApiCalls;
+import cz.uhk.zemanpe2.semproject.event.api.ApiErrorEvent;
 import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.MonthFinanceOverviewResponseEvent;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class ListActivity extends AppCompatActivity {
@@ -38,25 +41,23 @@ public class ListActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
     private String accessToken, refreshToken;
+    private Integer position;
     private Long expiresIn;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
-    public String getAccessToken() {
+    private String getAccessToken() {
         return accessToken;
     }
 
-    public String getRefreshToken() {
+    private String getRefreshToken() {
         return refreshToken;
     }
 
-    public Long getExpiresIn() {
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+
+    private Long getExpiresIn() {
         return expiresIn;
     }
 
@@ -65,28 +66,34 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             accessToken = extras.getString("access_token");
             refreshToken = extras.getString("refresh_token");
+            position = extras.getInt("position", 5000);
             expiresIn = extras.getLong("expires_in");
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mSectionsPagerAdapter.notifyDataSetChanged();
+        final ViewPager mViewPager = findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setCurrentItem(position, false);
+        mViewPager.post(new Runnable() {
+            @Override
+            public void run() {
+                mViewPager.setCurrentItem(position, false);
+            }
+        });
+
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(view.getContext(), AddActivity.class);
                 i.putExtra("access_token", accessToken);
                 i.putExtra("refresh_token", refreshToken);
+                i.putExtra("position", position);
                 i.putExtra("expires_in", expiresIn);
                 view.getContext().startActivity(i);
             }
@@ -98,31 +105,41 @@ public class ListActivity extends AppCompatActivity {
      * A month fragment containing a simple view.
      */
     public static class MonthFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
 
         private Bus bus;
-        private String accessToken, refreshToken;
+        private String accessToken, refreshToken, date;
         private Long expiresIn;
         private TextView tWStartBalance, tWEndBalance;
         private ListView lW;
+        private ListActivity parentActivity;
+        private boolean isVisible;
+        private TimeIsMoneyApiCalls api;
 
         public MonthFragment() {
+            this.api = TimeIsMoneyApplication.buildApi();
         }
 
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static MonthFragment newInstance(int sectionNumber) {
+        static MonthFragment newInstance(int sectionNumber) {
             MonthFragment fragment = new MonthFragment();
+
+            Calendar pagerdate = Calendar.getInstance();
+            pagerdate.set(Calendar.DAY_OF_MONTH, 1);
+            pagerdate.add(Calendar.MONTH, sectionNumber - 5000);
+
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putString("date", getDateFormat("dd-MM-yyyy").format(pagerdate.getTime()));
+            args.putInt("position", sectionNumber);
             fragment.setArguments(args);
+
             return fragment;
+        }
+
+        private static SimpleDateFormat getDateFormat(String format) {
+            return new SimpleDateFormat(format, Locale.ENGLISH);
         }
 
         @Override
@@ -130,20 +147,24 @@ public class ListActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_list, container, false);
 
+            TextView tWDate = rootView.findViewById(R.id.tWDate);
             tWStartBalance = rootView.findViewById(R.id.tWStartBalance);
             tWEndBalance = rootView.findViewById(R.id.tWEndBalance);
             lW = rootView.findViewById(R.id.lW);
-            ListActivity parentActivity = (ListActivity) getActivity();
-            if (parentActivity != null) {
+            parentActivity = (ListActivity) getActivity();
+            if (parentActivity != null && getArguments() != null) {
                 accessToken = parentActivity.getAccessToken();
                 refreshToken = parentActivity.getRefreshToken();
                 expiresIn = parentActivity.getExpiresIn();
+                if (isVisible) {
+                    parentActivity.setPosition(getArguments().getInt("position"));
+                }
 
-                DateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
                 try {
-                    MonthFinanceOverviewRequestEvent monthFinanceOverviewRequestEvent =
-                            new MonthFinanceOverviewRequestEvent(df.parse("01-05-2018"), accessToken);
-                    getBus().post(monthFinanceOverviewRequestEvent);
+                    Date parsedDate = getDateFormat("dd-MM-yyyy").parse(getArguments().getString("date"));
+                    date = getDateFormat("MM-yyyy").format(parsedDate);
+                    tWDate.setText(date);
+                    callApi();
                 } catch (ParseException e) {
                     Toast.makeText(
                             parentActivity.getApplicationContext(),
@@ -154,6 +175,19 @@ public class ListActivity extends AppCompatActivity {
             }
 
             return rootView;
+        }
+
+        @Override
+        public void setUserVisibleHint(boolean isVisibleToUser) {
+            super.setUserVisibleHint(isVisibleToUser);
+            if (isVisibleToUser) {
+                isVisible = true;
+                if (parentActivity != null && getArguments() != null) {
+                    parentActivity.setPosition(getArguments().getInt("position"));
+                }
+            } else {
+                isVisible = false;
+            }
         }
 
         @Override
@@ -170,19 +204,35 @@ public class ListActivity extends AppCompatActivity {
             getBus().unregister(this);
         }
 
-        @Subscribe
-        public void onMonthFinanceOverviewResponse(MonthFinanceOverviewResponseEvent event) {
-            tWStartBalance.setText(String.valueOf(event.getStartBalance()));
-            tWEndBalance.setText(String.valueOf(event.getEndBalance()));
-            lW.setAdapter(new ListAdapter(this.getContext(), event.getFinanceList()));
-        }
-
-        public Bus getBus() {
+        Bus getBus() {
             if (bus == null) {
                 bus = TimeIsMoneyApplication.getBus();
             }
 
             return bus;
+        }
+
+        private void callApi() {
+            Call<MonthFinanceOverviewResponseEvent> monthFinanceApiCall =
+                    api.monthFinanceOverview(date, accessToken);
+            monthFinanceApiCall.enqueue(new Callback<MonthFinanceOverviewResponseEvent>() {
+                @Override
+                public void onResponse(Call<MonthFinanceOverviewResponseEvent> call, Response<MonthFinanceOverviewResponseEvent> response) {
+                    MonthFinanceOverviewResponseEvent monthFinanceOverview = response.body();
+                    if (monthFinanceOverview == null) {
+                        bus.post(new ApiErrorEvent("Month finance overview is null"));
+                    } else {
+                        tWStartBalance.setText(String.valueOf(monthFinanceOverview.getStartBalance()));
+                        tWEndBalance.setText(String.valueOf(monthFinanceOverview.getEndBalance()));
+                        lW.setAdapter(new ListAdapter(getContext(), monthFinanceOverview.getFinanceList()));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MonthFinanceOverviewResponseEvent> call, Throwable throwable) {
+                    bus.post(new ApiErrorEvent(throwable.getMessage()));
+                }
+            });
         }
     }
 
@@ -192,21 +242,18 @@ public class ListActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a MonthFragment (defined as a static inner class below).
-            return MonthFragment.newInstance(position + 1);
+            return MonthFragment.newInstance(position);
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            return 10000;
         }
     }
 }

@@ -23,23 +23,12 @@ public class MonthFinanceOverviewResponseEvent {
         return startBalance;
     }
 
-    public void setStartBalance(float startBalance) {
-        this.startBalance = startBalance;
-    }
-
     public float getEndBalance() {
         return endBalance;
-    }
-
-    public void setEndBalance(float endBalance) {
-        this.endBalance = endBalance;
     }
 
     public List<FinancialEntity> getFinanceList() {
         return financeList;
     }
 
-    public void setFinanceList(List<FinancialEntity> financeList) {
-        this.financeList = financeList;
-    }
 }

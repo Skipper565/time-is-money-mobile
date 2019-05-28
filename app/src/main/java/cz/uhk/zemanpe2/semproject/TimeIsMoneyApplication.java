@@ -41,7 +41,7 @@ public class TimeIsMoneyApplication extends Application {
         return bus;
     }
 
-    private TimeIsMoneyApiCalls buildApi() {
+    static TimeIsMoneyApiCalls buildApi() {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
                     public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
