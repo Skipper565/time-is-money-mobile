@@ -9,6 +9,7 @@ import android.widget.TextView;
 import cz.uhk.zemanpe2.semproject.R;
 import cz.uhk.zemanpe2.semproject.event.monthFinanceOverview.FinancialEntity;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class ListAdapter extends BaseAdapter {
@@ -38,25 +39,47 @@ public class ListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder = new ViewHolder();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                ViewHolder holder = new ViewHolder();
         convertView = myInflater.inflate(R.layout.row_item, null);
-        holder.date = (TextView) convertView.findViewById(R.id.date);
-        holder.note = (TextView) convertView.findViewById(R.id.note);
-        holder.value = (TextView) convertView.findViewById(R.id.value);
+        holder.date = convertView.findViewById(R.id.date);
+        holder.value = convertView.findViewById(R.id.value);
+        holder.note = convertView.findViewById(R.id.note);
+        holder.latitude = convertView.findViewById(R.id.latitude);
+        holder.longitude = convertView.findViewById(R.id.longitude);
 
         convertView.setTag(holder);
 
-        holder.date.setText(list.get(position).getDate().toString());
-        holder.note.setText(list.get(position).getNote());
-        holder.value.setText(String.valueOf(list.get(position).getValue()));
+        holder.date.setText(df.format(list.get(position).getDate()));
+        String sign = "";
+        if (list.get(position).getType().equals("cost")) {
+            sign = "- ";
+        }
+        holder.value.setText(sign + list.get(position).getValue());
+        if (list.get(position).getNote() != null) {
+            holder.note.setVisibility(View.VISIBLE);
+            holder.note.setText(list.get(position).getNote());
+        }
+
+        if (list.get(position).getLatitude() != null) {
+            holder.latitude.setVisibility(View.VISIBLE);
+            holder.latitude.setText("Latitude: " + list.get(position).getLatitude());
+        }
+
+        if ( list.get(position).getLongitude() != null) {
+            holder.longitude.setVisibility(View.VISIBLE);
+            holder.longitude.setText("Longitude: " + list.get(position).getLongitude());
+        }
 
         return convertView;
     }
 
     static class ViewHolder {
         TextView date;
-        TextView note;
         TextView value;
+        TextView note;
+        TextView latitude;
+        TextView longitude;
     }
 
 }

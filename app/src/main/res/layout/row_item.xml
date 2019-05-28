@@ -14,21 +14,44 @@
             android:textColor="@android:color/black" />
 
     <TextView
+            android:id="@+id/value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Value"
+            android:textColor="@android:color/black"
+            android:layout_toEndOf="@+id/date"
+            android:textAlignment="textEnd" />
+
+    <TextView
             android:id="@+id/note"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/date"
             android:layout_marginTop="5dp"
             android:text="Note"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/black"
+            android:visibility="gone" />
 
     <TextView
-            android:id="@+id/value"
+            android:id="@+id/latitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/note"
             android:layout_marginTop="5dp"
-            android:text="Value"
-            android:textColor="@android:color/black" />
+            android:text="No latitude"
+            android:textColor="@android:color/black"
+            android:visibility="gone" />
+
+    <TextView
+            android:id="@+id/longitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="No longitude"
+            android:textColor="@android:color/black"
+            android:layout_toEndOf="@+id/latitude"
+            android:layout_below="@+id/note"
+            android:textAlignment="textEnd"
+            android:visibility="gone" />
 
 </RelativeLayout>

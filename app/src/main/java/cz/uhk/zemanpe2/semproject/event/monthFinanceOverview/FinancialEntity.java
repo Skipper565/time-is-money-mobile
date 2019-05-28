@@ -13,11 +13,11 @@ public class FinancialEntity {
 
     @SerializedName("date")
     @Expose
-    protected Date date;
+    private Date date;
 
     @SerializedName("value")
     @Expose
-    protected float value;
+    private float value;
 
     @SerializedName("note")
     @Expose
@@ -43,76 +43,27 @@ public class FinancialEntity {
     @Expose
     private Integer monthDay;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public Date getDate() {
         return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 
     public float getValue() {
         return value;
     }
 
-    public void setValue(float value) {
-        this.value = value;
-    }
-
     public String getNote() {
         return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 
     public Float getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Float latitude) {
-        this.latitude = latitude;
-    }
-
     public Float getLongitude() {
         return longitude;
-    }
-
-    public void setLongitude(Float longitude) {
-        this.longitude = longitude;
     }
 
     public String getType() {
         return type;
     }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Boolean getIsPermanent() {
-        return isPermanent;
-    }
-
-    public void setIsPermanent(Boolean isPermanent) {
-        this.isPermanent = isPermanent;
-    }
-
-    public Integer getMonthDay() {
-        return monthDay;
-    }
-
-    public void setMonthDay(Integer monthDay) {
-        this.monthDay = monthDay;
-    }
-
 }
